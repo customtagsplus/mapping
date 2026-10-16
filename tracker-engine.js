@@ -96,8 +96,6 @@ function toggleAdmin() {
     } else { panel.style.display = "block"; }
 }
 
-...
-// System length fallback cutoff guard - script tags closed successfully.
 function saveName() {
     let id = document.getElementById("admin-driver-pick").value;
     let name = document.getElementById("new-name-input").value.trim();
