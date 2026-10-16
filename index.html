@@ -4,97 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Driver Secure Paint Tracker</title>
-    <!-- Tailwind CSS for UI layout structures -->
-    <script src="https://tailwindcss.com"></script>
-    <!-- Firebase core app infrastructure layer and database routing scripts -->
+    <!-- Firebase core compatibility layers -->
     <script src="https://gstatic.com"></script>
     <script src="https://gstatic.com"></script>
+
+    <!-- Native Standard CSS (Replaces external Tailwind to fix loading errors) -->
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #111827;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background-color: #1f2937;
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-b: 1px solid #374151;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        .logo-area h1 { font-size: 1.25rem; font-weight: 700; color: #34d399; letter-spacing: 0.05em; }
+        .logo-area p { font-size: 0.75rem; color: #9ca3af; margin-top: 2px; }
+        .controls-area { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+        select, input {
+            background-color: #374151;
+            color: #ffffff;
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #4b5563;
+            outline: none;
+        }
+        select:focus, input:focus { border-color: #34d399; }
+        button {
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #action-btn { background-color: #059669; color: white; display: none; }
+        #action-btn:hover { background-color: #10b981; }
+        #admin-btn { background-color: #d97706; color: white; }
+        #admin-btn:hover { background-color: #f59e0b; }
+        #share-btn { background-color: #4b5563; color: white; border: 1px solid #6b7280; }
+        #share-btn:hover { background-color: #374151; }
+        
+        /* Layout container rules */
+        main { flex: 1; display: flex; flex-direction: row; relative: true; height: calc(100vh - 70px); }
+        #map { flex: 1; height: 100%; }
+        .sidebar { w: 320px; width: 320px; background-color: #1f2937; border-left: 1px solid #374151; padding: 1rem; overflow-y: auto; }
+        .sidebar h3 { font-size: 0.875rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+        .fleet-card { background-color: rgba(17,24,39,0.6); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #374151; margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .card-row { display: flex; justify-content: space-between; font-size: 0.75rem; }
+        
+        /* Admin Overlay styling handles */
+        #admin-panel {
+            display: none;
+            position: absolute;
+            top: 5rem;
+            right: 1.5rem;
+            background-color: rgba(31,41,55,0.95);
+            border: 1px solid rgba(217,119,6,0.4);
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            z-index: 30;
+            width: 320px;
+            backdrop-filter: blur(4px);
+        }
+        .admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .admin-head h2 { color: #f59e0b; font-weight: 700; font-size: 1rem; }
+        #close-admin { color: #9ca3af; background: none; padding: 0; font-size: 0.75rem; }
+        .admin-section-label { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.5rem; }
+        .wipe-btn-class { width: 100%; background-color: #be123c; color: white; padding: 0.6rem; font-weight: 700; border-radius: 0.5rem; margin-top: 1rem; }
+        .wipe-btn-class:hover { background-color: #e11d48; }
+
+        @media (max-width: 768px) {
+            main { flex-direction: column; }
+            .sidebar { width: 100%; height: 160px; border-left: none; border-top: 1px solid #374151; }
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white font-sans h-screen flex flex-col overflow-hidden">
+<body>
 
     <!-- Navigation Header -->
-    <header class="bg-gray-800 px-6 py-4 flex flex-wrap justify-between items-center shadow-lg z-10 border-b border-gray-700">
-        <div>
-            <h1 class="text-xl font-bold tracking-wide text-emerald-400">📍 Fleet Paint Tracker</h1>
-            <p id="role-badge" class="text-xs text-gray-400 mt-0.5">Multi-Driver Workspace</p>
+    <header>
+        <div class="logo-area">
+            <h1>📍 Fleet Paint Tracker</h1>
+            <p id="role-badge">Multi-Driver Workspace</p>
         </div>
         
-        <div class="flex flex-wrap items-center gap-3 mt-2 sm:mt-0">
-            <!-- Dynamic Driver Selector Layout -->
-            <select id="driver-selector" class="bg-gray-700 text-white text-sm rounded-lg px-3 py-2 border border-gray-600 focus:outline-none focus:border-emerald-500">
+        <div class="controls-area">
+            <select id="driver-selector">
                 <option value="viewer">🛰️ Viewer / Dispatcher Mode</option>
                 <option value="driver_1" id="opt-driver_1">🚗 Driver 1 (Neon Cyan)</option>
                 <option value="driver_2" id="opt-driver_2">🚙 Driver 2 (Hot Pink)</option>
                 <option value="driver_3" id="opt-driver_3">🚚 Driver 3 (Lime Green)</option>
                 <option value="driver_4" id="opt-driver_4">🚛 Driver 4 (Bright Orange)</option>
             </select>
-
-            <button id="action-btn" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-md">
-                Start Driving
-            </button>
-            
-            <button id="admin-btn" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-md">
-                ⚙️ Admin Panel
-            </button>
-
-            <button id="share-btn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all border border-gray-600">
-                🔗 Copy Link
-            </button>
+            <button id="action-btn">Start Driving</button>
+            <button id="admin-btn">⚙️ Admin Panel</button>
+            <button id="share-btn">🔗 Copy Link</button>
         </div>
     </header>
 
-    <!-- Admin Overlay Panel Element -->
-    <div id="admin-panel" class="hidden absolute top-20 right-6 bg-gray-800 border border-amber-500/40 p-5 rounded-xl shadow-2xl z-30 w-80 backdrop-blur-md">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-amber-400 font-bold text-base">Secure Settings</h2>
-            <button id="close-admin" class="text-gray-400 hover:text-white text-sm">✕ Close</button>
+    <!-- Secure Settings Panel -->
+    <div id="admin-panel">
+        <div class="admin-head">
+            <h2>Secure Settings</h2>
+            <button id="close-admin">✕ Close</button>
         </div>
-        
-        <!-- Fleet Naming Interface -->
-        <div class="space-y-2 mb-4">
-            <label class="text-xs text-gray-400 uppercase tracking-wider block font-semibold">Rename Live Fleet Profiles</label>
-            <div class="flex gap-2">
-                <select id="admin-driver-pick" class="bg-gray-700 text-xs rounded px-2 py-1 flex-1 text-white border border-gray-600">
+        <div>
+            <span class="admin-section-label">Rename Live Fleet Profiles</span>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <select id="admin-driver-pick" style="flex: 1; padding: 0.25rem;">
                     <option value="driver_1">Driver 1</option>
                     <option value="driver_2">Driver 2</option>
                     <option value="driver_3">Driver 3</option>
                     <option value="driver_4">Driver 4</option>
                 </select>
-                <input id="new-name-input" type="text" placeholder="Enter name" class="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white w-28 focus:border-amber-500 focus:outline-none">
-                <button id="save-name-btn" class="bg-amber-600 hover:bg-amber-500 px-2 py-1 text-xs font-semibold rounded">Save</button>
+                <input id="new-name-input" type="text" placeholder="New name" style="width: 100px; padding: 0.25rem;">
+                <button id="save-name-btn" style="background-color: #d97706; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">Save</button>
             </div>
         </div>
-
-        <hr class="border-gray-700 my-4">
-
-        <!-- Master Data Destruction System -->
-        <div>
-            <label class="text-xs text-gray-400 uppercase tracking-wider block font-semibold mb-2">Destructive Master Controls</label>
-            <button id="wipe-btn" class="w-full bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-md">
-                🚨 Wipe Entire Fleet Trails
-            </button>
-        </div>
+        <hr style="border-color: #374151;">
+        <button id="wipe-btn" class="wipe-btn-class">🚨 Wipe Entire Fleet Trails</button>
     </div>
 
-    <!-- Map Canvas Dashboard Framework -->
-    <main class="flex-1 relative flex flex-col md:flex-row">
-        <div id="map" class="flex-1 h-full"></div>
-
-        <!-- Metric Stream Feedback Sidebar Panel -->
-        <div class="w-full md:w-80 bg-gray-800 border-t md:border-t-0 md:border-l border-gray-700 p-4 overflow-y-auto max-h-48 md:max-h-full">
-            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Live Fleet Board</h3>
-            <div id="fleet-list" class="space-y-3">
-                <p id="no-drivers-text" class="text-sm text-gray-500 italic">No active driver feeds detected.</p>
+    <!-- Main Dynamic Core Window Framework -->
+    <main>
+        <div id="map"></div>
+        <div class="sidebar">
+            <h3>Live Fleet Board</h3>
+            <div id="fleet-list">
+                <p id="no-drivers-text" style="font-size: 0.875rem; color: #6b7280; font-style: italic;">No active driver feeds detected.</p>
             </div>
         </div>
     </main>
 
     <script>
-        // ✅ YOUR PROJECT CONFIGURATION DATA APPLIED INTACT BELOW
+        // ✅ YOUR FIREBASE LIVE TARGET CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyBzi9FfdZr1TxPHWbD8x4Ywv2lEgFL4I9Q",
-            authDomain: "mapping-3fb9f.firebaseapp.com",
-            databaseURL: "https://firebaseio.com", // Formatted default routing endpoint
+            authDomain: "://firebaseapp.com",
+            databaseURL: "https://firebaseio.com",
             projectId: "mapping-3fb9f",
             storageBucket: "mapping-3fb9f.firebasestorage.app",
             messagingSenderId: "943385231902",
@@ -102,10 +166,9 @@
             measurementId: "G-3RL9ER71NY"
         };
 
-        const GOOGLE_MAPS_API_KEY = "AIzaSyBWyV2U6ZFTTxbyHrMFt9Y1IhUXt-uD9_8"; // 👈 Insert Google Map JS Key string token here
-        const ADMIN_PASSWORD = "admin123"; // 🔒 Custom safety authorization prompt pass code key string token
+        const GOOGLE_MAPS_API_KEY = "AIzaSyBWyV2U6ZFTTxbyHrMFt9Y1IhUXt-uD9_8"; // 👈 Swap in your real key string token here
+        const ADMIN_PASSWORD = "admin123";
 
-        // Dynamic Configuration Values Mapping Template
         let driverStyles = {
             driver_1: { name: "Driver 1", color: "#00ffcc" },
             driver_2: { name: "Driver 2", color: "#ff007f" },
@@ -124,11 +187,10 @@
             initFirebase();
             loadGoogleMapsScript();
 
-            // Bind UI Action Interfaces
             document.getElementById("driver-selector").addEventListener("change", (e) => handleRoleChange(e.target.value));
             document.getElementById("action-btn").addEventListener("click", toggleTracking);
             document.getElementById("admin-btn").addEventListener("click", toggleAdminPanel);
-            document.getElementById("close-admin").addEventListener("click", () => document.getElementById("admin-panel").classList.add("hidden"));
+            document.getElementById("close-admin").addEventListener("click", () => document.getElementById("admin-panel").style.display = "none");
             document.getElementById("save-name-btn").addEventListener("click", commitDriverNameChange);
             document.getElementById("wipe-btn").addEventListener("click", clearAllDatabaseTrails);
             document.getElementById("share-btn").addEventListener("click", () => {
@@ -153,43 +215,3 @@
         }
 
         function initMap() {
-            map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 13,
-                center: { lat: 43.5446, lng: -96.7311 },
-                mapTypeId: 'roadmap',
-                styles: [
-                    { "elementType": "geometry", "stylers": [{ "color": "#212121" }] },
-                    { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] },
-                    { "featureType": "road", "elementType": "geometry.fill", "stylers": [{ "color": "#2c2c2c" }] },
-                    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#000000" }] }
-                ]
-            });
-            startGlobalFleetListener();
-        }
-
-        function toggleAdminPanel() {
-            const panel = document.getElementById("admin-panel");
-            if (!panel.classList.contains("hidden")) {
-                panel.classList.add("hidden");
-                return;
-            }
-
-            if (!isAdminAuthenticated) {
-                const passwordAttempt = prompt("🔑 Enter Admin Gatekeeper Password:");
-                if (passwordAttempt === ADMIN_PASSWORD) {
-                    isAdminAuthenticated = true;
-                    panel.classList.remove("hidden");
-                } else {
-                    alert("🛑 Access Denied: Incorrect Password.");
-                }
-            } else {
-                panel.classList.remove("hidden");
-            }
-        }
-
-        function commitDriverNameChange() {
-            const id = document.getElementById("admin-driver-pick").value;
-            const chosenName = document.getElementById("new-name-input").value.trim();
-            if (!chosenName) return alert("Please type a valid label name.");
-            
-            // Push modifications along with a validation token layout block
