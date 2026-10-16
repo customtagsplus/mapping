@@ -58,7 +58,7 @@
             <div id="fleet-list"><p id="no-drivers" style="font-size:13px; color:#4b5563; italic; margin-top:10px;">No active drivers.</p></div>
         </div>
     </main>
-    <script>
+      <script>
         const GOOGLE_MAPS_API_KEY = "AIzaSyBWyV2U6ZFTTxbyHrMFt9Y1IhUXt-uD9_8";
         const ADMIN_PASSWORD = "admin123";
         const dbUrl = "https://firebaseio.com";
@@ -112,7 +112,6 @@
                 styles: [{ "elementType": "geometry", "stylers": [{ "color": "#212121" }] }, { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] }]
             });
         }
-
         function processMeta(meta) {
             Object.keys(driverStyles).forEach(id => {
                 if (meta[id] && meta[id].name) {
@@ -223,3 +222,4 @@
     </script>
 </body>
 </html>
+
