@@ -3,164 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Paint Tracker Workspace</title>
-    
-    <!-- Real-time database sync scripts -->
-    <script src="https://gstatic.com"></script>
-    <script src="https://gstatic.com"></script>
-
-    <!-- Embedded Native Layout Configurations -->
+    <title>Fleet Paint Tracker</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #111827; }
-        body {
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-        }
-        header {
-            background-color: #1f2937;
-            padding: 1rem 1.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #374151;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
-            z-index: 10;
-        }
-        .logo-area h1 { font-size: 1.25rem; font-weight: 700; color: #34d399; letter-spacing: 0.05em; }
-        .logo-area p { font-size: 0.75rem; color: #9ca3af; margin-top: 2px; }
-        .controls-area { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
-        select, input {
-            background-color: #374151;
-            color: #ffffff;
-            font-size: 0.875rem;
-            border-radius: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            border: 1px solid #4b5563;
-            outline: none;
-        }
-        select:focus, input:focus { border-color: #34d399; }
-        button {
-            font-size: 0.875rem;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        #action-btn { background-color: #059669; color: white; display: none; }
-        #action-btn:hover { background-color: #10b981; }
-        #admin-btn { background-color: #d97706; color: white; }
-        #admin-btn:hover { background-color: #f59e0b; }
-        #share-btn { background-color: #4b5563; color: white; border: 1px solid #6b7280; }
-        #share-btn:hover { background-color: #374151; }
-        
-        main { flex: 1; display: flex; flex-direction: row; height: calc(100vh - 75px); position: relative; }
-        #map { flex: 1; height: 100%; background-color: #111827; }
-        .sidebar { width: 320px; background-color: #1f2937; border-left: 1px solid #374151; padding: 1rem; overflow-y: auto; }
-        .sidebar h3 { font-size: 0.875rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
-        .fleet-card { background-color: rgba(17,24,39,0.6); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #374151; margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .card-row { display: flex; justify-content: space-between; font-size: 0.75rem; }
-        
-        #admin-panel {
-            display: none;
-            position: absolute;
-            top: 5rem;
-            right: 1.5rem;
-            background-color: rgba(31,41,55,0.98);
-            border: 1px solid rgba(217,119,6,0.4);
-            padding: 1.25rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            z-index: 30;
-            width: 320px;
-        }
-        .admin-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .admin-head h2 { color: #f59e0b; font-weight: 700; font-size: 1rem; }
-        #close-admin { color: #9ca3af; background: none; padding: 0; font-size: 0.75rem; }
-        .admin-section-label { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.5rem; }
-        .wipe-btn-class { width: 100%; background-color: #be123c; color: white; padding: 0.6rem; font-weight: 700; border-radius: 0.5rem; margin-top: 1rem; }
-        .wipe-btn-class:hover { background-color: #e11d48; }
-
-        @media (max-width: 768px) {
-            main { flex-direction: column; }
-            .sidebar { width: 100%; height: 160px; border-left: none; border-top: 1px solid #374151; }
-        }
+        body { background-color: #111827; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background-color: #1f2937; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #374151; }
+        .controls { display: flex; gap: 10px; align-items: center; }
+        select, input, button { background-color: #374151; color: #fff; border: 1px solid #4b5563; padding: 6px 12px; border-radius: 4px; font-size: 14px; cursor: pointer; }
+        #action-btn { background-color: #059669; display: none; }
+        #admin-btn { background-color: #d97706; }
+        main { flex: 1; display: flex; position: relative; }
+        #map { flex: 1; background-color: #1f2937; }
+        .sidebar { width: 280px; background-color: #1f2937; border-left: 1px solid #374151; padding: 15px; overflow-y: auto; }
+        .fleet-card { background-color: #111827; padding: 10px; border-radius: 6px; border: 1px solid #374151; margin-top: 10px; }
+        #admin-panel { display: none; position: absolute; top: 60px; right: 20px; background-color: #1f2937; border: 1px solid #d97706; padding: 15px; border-radius: 8px; z-index: 99; width: 300px; }
     </style>
 </head>
 <body>
-
     <header>
-        <div class="logo-area">
-            <h1>📍 Fleet Paint Tracker</h1>
-            <p id="role-badge">Multi-Driver Workspace Dashboard</p>
+        <div>
+            <h1 style="font-size:18px; color:#34d399;">📍 Fleet Paint Tracker</h1>
+            <p id="role-badge" style="font-size:11px; color:#9ca3af;">Viewer / Dashboard Mode</p>
         </div>
-        
-        <div class="controls-area">
+        <div class="controls">
             <select id="driver-selector">
-                <option value="viewer">🛰️ Viewer / Dispatcher Mode</option>
-                <option value="driver_1" id="opt-driver_1">🚗 Driver 1 (Neon Cyan)</option>
-                <option value="driver_2" id="opt-driver_2">🚙 Driver 2 (Hot Pink)</option>
-                <option value="driver_3" id="opt-driver_3">🚚 Driver 3 (Lime Green)</option>
-                <option value="driver_4" id="opt-driver_4">🚛 Driver 4 (Bright Orange)</option>
+                <option value="viewer">🛰️ Dispatcher Dashboard</option>
+                <option value="driver_1" id="opt-driver_1">🚗 Driver 1 (Cyan)</option>
+                <option value="driver_2" id="opt-driver_2">🚙 Driver 2 (Pink)</option>
+                <option value="driver_3" id="opt-driver_3">🚚 Driver 3 (Green)</option>
+                <option value="driver_4" id="opt-driver_4">🚛 Driver 4 (Orange)</option>
             </select>
             <button id="action-btn">Start Driving</button>
-            <button id="admin-btn">⚙️ Admin Panel</button>
+            <button id="admin-btn">⚙️ Admin</button>
             <button id="share-btn">🔗 Copy Link</button>
         </div>
     </header>
 
     <div id="admin-panel">
-        <div class="admin-head">
-            <h2>Secure Settings</h2>
-            <button id="close-admin">✕ Close</button>
+        <h3 style="color:#d97706; margin-bottom:10px;">Secure Settings</h3>
+        <p style="font-size:12px; color:#9ca3af;">Rename Live Driver Profile:</p>
+        <div style="display:flex; gap:5px; margin:5px 0 15px 0;">
+            <select id="admin-driver-pick" style="padding:4px;"><option value="driver_1">Driver 1</option><option value="driver_2">Driver 2</option><option value="driver_3">Driver 3</option><option value="driver_4">Driver 4</option></select>
+            <input id="new-name-input" type="text" placeholder="Name" style="width:90px; padding:4px;">
+            <button id="save-name-btn" style="background:#d97706; padding:4px 8px;">Save</button>
         </div>
-        <div>
-            <span class="admin-section-label">Rename Live Fleet Profiles</span>
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                <select id="admin-driver-pick" style="flex: 1; padding: 0.25rem;">
-                    <option value="driver_1">Driver 1</option>
-                    <option value="driver_2">Driver 2</option>
-                    <option value="driver_3">Driver 3</option>
-                    <option value="driver_4">Driver 4</option>
-                </select>
-                <input id="new-name-input" type="text" placeholder="New name" style="width: 100px; padding: 0.25rem;">
-                <button id="save-name-btn" style="background-color: #d97706; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">Save</button>
-            </div>
-        </div>
-        <hr style="border-color: #374151;">
-        <button id="wipe-btn" class="wipe-btn-class">🚨 Wipe Entire Fleet Trails</button>
+        <button id="wipe-btn" style="background:#be123c; width:100%; font-weight:bold; padding:8px;">🚨 Wipe Master Fleet Trails</button>
+        <button id="close-admin" style="background:none; border:none; width:100%; margin-top:10px; font-size:12px; color:#9ca3af;">Close Panel</button>
     </div>
 
     <main>
         <div id="map"></div>
         <div class="sidebar">
-            <h3>Live Fleet Board</h3>
-            <div id="fleet-list">
-                <p id="no-drivers-text" style="font-size: 0.875rem; color: #6b7280; font-style: italic;">No active driver feeds detected.</p>
-            </div>
+            <h3 style="font-size:12px; color:#9ca3af; text-transform:uppercase;">Live Fleet Status</h3>
+            <div id="fleet-list"><p id="no-drivers" style="font-size:13px; color:#4b5563; italic; margin-top:10px;">No active drivers.</p></div>
         </div>
     </main>
-
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBzi9FfdZr1TxPHWbD8x4Ywv2lEgFL4I9Q",
-            authDomain: "://firebaseapp.com",
-            databaseURL: "https://firebaseio.com",
-            projectId: "mapping-3fb9f",
-            storageBucket: "mapping-3fb9f.firebasestorage.app",
-            messagingSenderId: "943385231902",
-            appId: "1:943385231902:web:6e16d25f8f1f4ba65fe40f",
-            measurementId: "G-3RL9ER71NY"
-        };
-
-        const GOOGLE_MAPS_API_KEY = "AIzaSyBWyV2U6ZFTTxbyHrMFt9Y1IhUXt-uD9_8"; // 👈 Insert Google Map JS Key string token here
+        const GOOGLE_MAPS_API_KEY = "AIzaSyBWyV2U6ZFTTxbyHrMFt9Y1IhUXt-uD9_8"; // 👈 Enter your Google Map Key string here
         const ADMIN_PASSWORD = "admin123";
-
+        const dbUrl = "https://firebaseio.com";
+        
         let driverStyles = {
             driver_1: { name: "Driver 1", color: "#00ffcc" },
             driver_2: { name: "Driver 2", color: "#ff007f" },
@@ -168,48 +70,156 @@
             driver_4: { name: "Driver 4", color: "#ff5e00" }
         };
 
-        let db, map;
-        let currentRole = "viewer";
-        let watchId = null;
-        let isTracking = false;
-        let fleetData = {};
-        let isAdminAuthenticated = false;
+        let map, currentRole = "viewer", watchId = null, isTracking = false, fleetData = {}, isAdminAuthenticated = false;
+
+        async function fbRequest(path, method, data = null) {
+            try {
+                let options = { method };
+                if (data) options.body = JSON.stringify(data);
+                await fetch(`${dbUrl}/${path}.json`, options);
+            } catch(e) { console.error(e); }
+        }
+
+        function startSyncLoop() {
+            setInterval(async () => {
+                try {
+                    let r = await fetch(`${dbUrl}/.json`);
+                    let data = await r.json() || {};
+                    processFleet(data.fleet || {});
+                    processMeta(data.fleet_metadata || {});
+                } catch(e) {}
+            }, 2000);
+        }
 
         document.addEventListener("DOMContentLoaded", () => {
-            initFirebase();
-            loadGoogleMapsScript();
-
             document.getElementById("driver-selector").addEventListener("change", (e) => handleRoleChange(e.target.value));
             document.getElementById("action-btn").addEventListener("click", toggleTracking);
-            document.getElementById("admin-btn").addEventListener("click", toggleAdminPanel);
+            document.getElementById("admin-btn").addEventListener("click", toggleAdmin);
             document.getElementById("close-admin").addEventListener("click", () => document.getElementById("admin-panel").style.display = "none");
-            document.getElementById("save-name-btn").addEventListener("click", commitDriverNameChange);
-            document.getElementById("wipe-btn").addEventListener("click", clearAllDatabaseTrails);
-            document.getElementById("share-btn").addEventListener("click", () => {
-                navigator.clipboard.writeText(window.location.href);
-                alert("Dashboard share link copied!");
-            });
+            document.getElementById("save-name-btn").addEventListener("click", saveName);
+            document.getElementById("wipe-btn").addEventListener("click", wipeData);
+            document.getElementById("share-btn").addEventListener("click", () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); });
 
-            listenToCustomDriverNames();
+            let s = document.createElement("script");
+            s.src = `https://googleapis.com{GOOGLE_MAPS_API_KEY}&callback=initMap`;
+            document.head.appendChild(s);
+            startSyncLoop();
         });
 
-        function initFirebase() {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        }
-
-        function loadGoogleMapsScript() {
-            const script = document.createElement("script");
-            // Cache busting timestamp parameter added to bypass old deployment bugs
-            script.src = `https://googleapis.com{GOOGLE_MAPS_API_KEY}&callback=initMap&v=weekly&t=${Date.now()}`;
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-        }
-
         function initMap() {
-            const mapContainer = document.getElementById("map");
-            if (!mapContainer) return;
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13, center: { lat: 43.5446, lng: -96.7311 }, mapTypeId: 'roadmap',
+                styles: [{ "elementType": "geometry", "stylers": [{ "color": "#212121" }] }, { "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] }]
+            });
+        }
+
+        function processMeta(meta) {
+            Object.keys(driverStyles).forEach(id => {
+                if (meta[id] && meta[id].name) {
+                    driverStyles[id].name = meta[id].name;
+                    let opt = document.getElementById(`opt-${id}`);
+                    if (opt && !opt.textContent.includes(meta[id].name)) {
+                        opt.textContent = `${meta[id].name} ${opt.textContent.substring(opt.textContent.indexOf("("))}`;
+                    }
+                }
+            });
+        }
+
+        function processFleet(fleet) {
+            Object.keys(fleetData).forEach(id => { if (!fleet[id]) removeDriver(id); });
+            let activeCount = 0;
             
-            map = new google.maps.Map(mapContainer, {
-                zoom: 13,
+            Object.keys(driverStyles).forEach((driverId) => {
+                let record = fleet[driverId] || {};
+                let tel = record.telemetry || { active: false, speed: 0 };
+                let pts = Object.values(record.path || {}).map(pt => ({ lat: pt.lat, lng: pt.lng }));
+
+                if (pts.length > 0 || tel.active) {
+                    activeCount++;
+                    if(map) {
+                        initDriverOnMap(driverId);
+                        fleetData[driverId].polyline.setPath(pts);
+                        if (tel.lat && tel.lng) {
+                            fleetData[driverId].marker.setPosition({ lat: tel.lat, lng: tel.lng });
+                            fleetData[driverId].marker.setVisible(true);
+                            if (currentRole === driverId && isTracking) map.panTo({ lat: tel.lat, lng: tel.lng });
+                        }
+                    }
+                    updateCard(driverId, tel, pts.length);
+                } else { removeDriver(driverId); }
+            });
+            document.getElementById("no-drivers").style.display = (activeCount === 0) ? "block" : "none";
+        }
+
+        function toggleAdmin() {
+            let panel = document.getElementById("admin-panel");
+            if (panel.style.display === "block") { panel.style.display = "none"; return; }
+            if (!isAdminAuthenticated) {
+                if (prompt("🔑 Enter Admin Password:") === ADMIN_PASSWORD) { isAdminAuthenticated = true; panel.style.display = "block"; }
+                else { alert("Access Denied."); }
+            } else { panel.style.display = "block"; }
+        }
+
+        function saveName() {
+            let id = document.getElementById("admin-driver-pick").value;
+            let name = document.getElementById("new-name-input").value.trim();
+            if (!name) return;
+            fbRequest(`fleet_metadata/${id}`, 'PUT', { name }).then(() => { document.getElementById("new-name-input").value = ""; alert("Saved!"); });
+        }
+
+        function wipeData() {
+            if (confirm("🚨 Wipe all painted trails?")) { fbRequest('fleet', 'DELETE').then(() => alert("Wiped.")); }
+        }
+
+        function handleRoleChange(role) {
+            if (isTracking) toggleTracking();
+            currentRole = role;
+            let btn = document.getElementById("action-btn");
+            let badge = document.getElementById("role-badge");
+            if (currentRole === "viewer") { btn.style.display = "none"; badge.textContent = "Viewer / Dashboard Mode"; }
+            else { btn.style.display = "inline-block"; badge.textContent = `Driver: ${driverStyles[currentRole].name}`; }
+        }
+
+        function toggleTracking() {
+            let btn = document.getElementById("action-btn");
+            if (isTracking) {
+                if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+                isTracking = false; btn.textContent = "Start Driving"; btn.style.backgroundColor = "#059669";
+                fbRequest(`fleet/${currentRole}/telemetry`, 'PUT', { active: false, speed: 0 });
+            } else {
+                if (!navigator.geolocation) return alert("Geolocation unsupported.");
+                isTracking = true; btn.textContent = "Stop Driving"; btn.style.backgroundColor = "#be123c";
+                watchId = navigator.geolocation.watchPosition((pos) => {
+                    let lat = pos.coords.latitude, lng = pos.coords.longitude, speed = ((pos.coords.speed || 0) * 2.23694).toFixed(1);
+                    fbRequest(`fleet/${currentRole}/path`, 'POST', { lat, lng, timestamp: Date.now() });
+                    fbRequest(`fleet/${currentRole}/telemetry`, 'PUT', { active: true, speed, lat, lng });
+                }, (err) => {}, { enableHighAccuracy: true });
+            }
+        }
+
+        function initDriverOnMap(id) {
+            if (!fleetData[id] && map) {
+                let color = driverStyles[id].color;
+                let polyline = new google.maps.Polyline({ path: [], strokeColor: color, strokeOpacity: 0.8, strokeWeight: 8, map: map });
+                let marker = new google.maps.Marker({ position: { lat: 0, lng: 0 }, map: map, visible: false, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: color, fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 } });
+                fleetData[id] = { polyline, marker };
+            }
+        }
+
+        function updateCard(id, tel, count) {
+            let card = document.getElementById(`card-${id}`);
+            if (!card) {
+                card = document.createElement("div"); card.id = `card-${id}`; card.className = "fleet-card";
+                document.getElementById("fleet-list").appendChild(card);
+            }
+            card.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:${driverStyles[id].color}">${driverStyles[id].name}</span><span style="color:${tel.active ? '#34d399':'#6b7280'}">${tel.active ? 'PAINTING':'IDLE'}</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; color:#9ca3af; margin-top:5px;"><span>Speed: <b>${tel.speed || 0} mph</b></span><span>Points: <b>${count}</b></span></div>`;
+        }
+
+        function removeDriver(id) {
+            if (fleetData[id]) { if(fleetData[id].polyline) fleetData[id].polyline.setMap(null); if(fleetData[id].marker) fleetData[id].marker.setMap(null); delete fleetData[id]; }
+            let card = document.getElementById(`card-${id}`); if (card) card.remove();
+        }
+    </script>
+</body>
+</html>
