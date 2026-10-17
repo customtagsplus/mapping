@@ -13,10 +13,8 @@ let map, currentRole = "viewer", watchId = null, isTracking = false, fleetData =
 
 async function fbRequest(path, method, data = null) {
     try {
-        let options = { method };
-        if (data) options.body = JSON.stringify(data);
-        await fetch(`${dbUrl}/${path}.json`, options);
-    } catch(e) { console.error("Database connection error:", e); }
+        await fetch(`${dbUrl}/${path}.json`, { method, body: data ? JSON.stringify(data) : null });
+    } catch(e) { console.error(e); }
 }
 
 function startSyncLoop() {
@@ -39,8 +37,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("wipe-btn").addEventListener("click", wipeData);
     document.getElementById("share-btn").addEventListener("click", () => { navigator.clipboard.writeText(window.location.href); alert("Link Copied!"); });
 
+    // Secure validation structure to force browser to draw the Map canvas layer
     let s = document.createElement("script");
-    s.src = `https://googleapis.com{GOOGLE_MAPS_API_KEY}&callback=initMap`;
+    s.src = `https://googleapis.com{GOOGLE_MAPS_API_KEY}&callback=initMap&v=weekly`;
+    s.async = true;
+    s.defer = true;
     document.head.appendChild(s);
     startSyncLoop();
 });
@@ -58,18 +59,19 @@ function processMeta(meta) {
             driverStyles[id].name = meta[id].name;
             let opt = document.getElementById(`opt-${id}`);
             if (opt) { opt.textContent = `${meta[id].name} (${id.replace('_', ' ')})`; }
+            let cardName = document.querySelector(`#card-${id} .driver-title-label`);
+            if (cardName) cardName.textContent = meta[id].name;
         }
     });
 }
+
 function processFleet(fleet) {
     Object.keys(fleetData).forEach(id => { if (!fleet[id]) removeDriver(id); });
     let activeCount = 0;
-    
     Object.keys(driverStyles).forEach((driverId) => {
         let record = fleet[driverId] || {};
         let tel = record.telemetry || { active: false, speed: 0 };
         let pts = Object.values(record.path || {}).map(pt => ({ lat: pt.lat, lng: pt.lng }));
-
         if (pts.length > 0 || tel.active) {
             activeCount++;
             if(map) {
@@ -152,7 +154,7 @@ function updateCard(id, tel, count) {
         card = document.createElement("div"); card.id = `card-${id}`; card.className = "fleet-card";
         document.getElementById("fleet-list").appendChild(card);
     }
-    card.innerHTML = `<div class="card-row"><span style="color:${driverStyles[id].color}">${driverStyles[id].name}</span><span style="color:${tel.active ? '#34d399':'#6b7280'}">${tel.active ? 'PAINTING':'IDLE'}</span></div>
+    card.innerHTML = `<div class="card-row"><span class="driver-title-label" style="color:${driverStyles[id].color}">${driverStyles[id].name}</span><span style="color:${tel.active ? '#34d399':'#6b7280'}">${tel.active ? 'PAINTING':'IDLE'}</span></div>
     <div class="card-row" style="color:#9ca3af; margin-top:5px;"><span>Speed: <b>${tel.speed || 0} mph</b></span><span>Points: <b>${count}</b></span></div>`;
 }
 
